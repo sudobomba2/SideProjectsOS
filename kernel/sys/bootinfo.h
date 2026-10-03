@@ -3,6 +3,7 @@
 #pragma once
 
 #include "stdint.h"
+#include "stddef.h"
 
 #pragma pack(push,1)
 struct E820Entry{
@@ -38,6 +39,7 @@ struct VideoFramebuffer{
 	uint32_t Width;
 	uint32_t Height;
 	uint32_t Pitch;
+	uint32_t BPP;
 };
 
 _Static_assert(offsetof(struct BootInfo,Memory)==0x10,"E820_BUF mismatch");
