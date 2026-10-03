@@ -1,3 +1,5 @@
+/* Low Budget Libc */
+
 #ifndef __LIBC_H__
 #define __LIBC_H__
 #pragma once 
@@ -9,6 +11,7 @@
 #define FLAG_SET(x,flag) x|=(flag)
 #define FLAG_UNSET(x,flag) x&=~(flag)
 
+/* Convience */
 typedef long ssize_t;
 typedef long off_t;
 typedef int pid_t;
@@ -73,9 +76,6 @@ int isprint(int c);
 int iscntrl(int c);
 int tolower(int c);
 int toupper(int c);
-int starts(const char *s,const char *p);
-int ends(const char *s,const char *p);
-char *skip(char *s);
 int strcasecmp(const char *s1,const char *s2);
 int strncasecmp(const char *s1,const char *s2,size_t n);
 #endif

@@ -1,3 +1,5 @@
+/* Low Budget Libc */
+
 #include "libc.h"
 
 static void reverse2(char* str,int length){
@@ -198,27 +200,6 @@ int isprint(int c){return(c>=32&&c<=126);}
 int iscntrl(int c){return (c>=0&&c<32)||c==127;}
 int tolower(int c){if(isupper(c)){return c+32;}return c;}
 int toupper(int c){if(islower(c)){return c-32;}return c;}
-
-int starts(const char *s,const char *p){
-	int i=0;
-	while(p[i]){if(s[i]!=p[i]){return 0;}i++;}
-	return 1;
-}
-
-int ends(const char *s,const char *p){
-	if(!s||!p){return 0;}
-	int s_len=strlen(s);
-	int p_len=strlen(p);
-	if(p_len>s_len){return 0;}
-	int i=p_len-1;
-	while(i>=0){if(s[s_len-p_len+i]!=p[i]){return 0;}i--;}
-	return 1;
-}
-
-char *skip(char *s){
-	while(*s==' '){s++;}
-	return s;
-}
 
 int strcasecmp(const char *s1,const char *s2){
 	const unsigned char *p1=(const unsigned char *)s1;
