@@ -14,12 +14,16 @@ E820_COUNT equ BOOTINFO+0x08
 CODE32 equ 0x08
 DATA32 equ 0x10
 CODE64 equ 0x18
+VBE_INFO equ 0x4000
+MODE_INFO equ 0x4200
+VBERES equ E820_BUF+E820_MAX*24
 
 section .text.entry progbits alloc exec nowrite align=16
 global start
 global BOOTDRIVE
 global BOOTPARTOFF
 global BOOTPARTSEG
+global VBERES
 extern entry64
 extern __bss_start
 extern __bss_end
@@ -40,6 +44,7 @@ start:
 	call check_cpu
 	call enable_a20
 	call get_e820
+	call vbe_setup
 	cli
 	lgdt [gdt_desc]
 	mov eax,cr0
@@ -200,7 +205,7 @@ get_e820:
 	xor si,si
 	mov di,E820_BUF
 .next:
-    mov eax,0xE820
+	mov eax,0xE820
 	mov edx,0x534D4150
 	mov ecx,24
 	mov dword[di+20],1
@@ -221,6 +226,91 @@ get_e820:
 .done:
 	movzx esi,si
 	mov [E820_COUNT],esi
+	ret
+
+vbe_setup:
+	pusha
+	push fs
+	mov di,VBERES
+	mov cx,8
+	xor ax,ax
+	rep stosw
+	mov dword [VBE_INFO],'VBE2'
+	mov ax,0x4F00
+	mov di,VBE_INFO
+	int 0x10
+	cmp ax,0x004F
+	jne .no_vbe
+	cmp dword [VBE_INFO],'VESA'
+	jne .no_vbe
+	cmp word [VBE_INFO+4],0x0300
+	jb .no_vbe
+	mov si,[VBE_INFO+14]
+	mov ax,[VBE_INFO+16]
+	mov fs,ax
+.next:
+	mov cx,[fs:si]
+	add si,2
+	cmp cx,0xFFFF
+	je .no_modes
+	mov [cur_mode],cx
+	push si
+	push fs
+	mov ax,0x4F01
+	mov di,MODE_INFO
+	int 0x10
+	pop fs
+	pop si
+	cmp ax,0x004F
+	jne .next
+	mov ax,[MODE_INFO]
+	and ax,0x0091
+	cmp ax,0x0091
+	jne .next
+	mov al,[MODE_INFO+27]
+	cmp al,4
+	je .model_ok
+	cmp al,6
+	jne .next
+.model_ok:
+	cmp byte [MODE_INFO+25],32
+	jne .next
+	cmp word [MODE_INFO+18],640
+	jne .next
+	cmp word [MODE_INFO+20],480
+	jne .next
+	mov bx,[cur_mode]
+	or bx,0x4000
+	mov ax,0x4F02
+	int 0x10
+	cmp ax,0x004F
+	jne .set_fail
+	mov ax,[cur_mode]
+	mov [VBERES],ax
+	mov ax,[MODE_INFO+18]
+	mov [VBERES+2],ax
+	mov ax,[MODE_INFO+20]
+	mov [VBERES+4],ax
+	mov ax,[MODE_INFO+16]
+	mov [VBERES+6],ax
+	mov al,[MODE_INFO+25]
+	mov [VBERES+8],al
+	mov eax,[MODE_INFO+40]
+	mov [VBERES+12],eax
+	jmp .exit
+.no_vbe:
+	mov si,msg_no_vbe
+	jmp .fail
+.no_modes:
+	mov si,msg_no_vbe_modes
+	jmp .fail
+.set_fail:
+	mov si,msg_vbe_setfail
+.fail:
+	call puts
+.exit:
+	pop fs
+	popa
 	ret
 
 puts:
@@ -307,6 +397,10 @@ msg_press_key: db "Press any key to power off...",13,10,0
 apm_available: db "APM is Available, Shutting down...",13,10,0
 no_apm_msg: db "No APM Detected",13,10,"Using VM Shutdown...",13,10,0
 hang_halt_msg: db "No APM Detected",13,10,"It is now safe to turn off your computer",13,10,0
+msg_no_vbe: db "VBE 3.0+ not available",13,10,0
+msg_no_vbe_modes: db "No 640x480x32 VBE mode",13,10,0
+msg_vbe_setfail: db "VBE mode set failed",13,10,0
+cur_mode: dw 0
 
 align 8
 gdt:
