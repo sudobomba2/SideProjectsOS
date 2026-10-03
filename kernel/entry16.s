@@ -464,7 +464,6 @@ lm64:
 	mov fs,ax
 	mov gs,ax
 	mov ss,ax
-	mov dword[0xB8000],0x0F4B0F4F
 	mov rsp,STACK_TOP
 	mov edi,BOOTINFO
 	call entry64
