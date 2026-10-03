@@ -1,3 +1,6 @@
+/* Some part lf this code is taken from asido/OS*/
+/*Arvydas Sidorenko */
+
 #ifndef __SIDEPROJECTS_CMOS_UTILITY_H__
 #define __SIDEPROJECTS_CMOS_UTILITY_H__
 #pragma once
