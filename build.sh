@@ -19,7 +19,8 @@ build(){ # build
 	$CC $CFLAGS -c kernel/main64.c -o main64.o
 	$CC $CFLAGS -c kernel/lib/libc.c -o libc.o 
 	$CC $CFLAGS -c kernel/lib/video.c -o video.o
-	$LD $LDFLAGS entry16.o main64.o libc.o video.o -o KERNEL64.ELF
+	$CC $CFLAGS -c kernel/lib/gdt.c -o gdt.o
+	$LD $LDFLAGS entry16.o main64.o libc.o video.o gdt.o -o KERNEL64.ELF
 	$OBJCOPY $OBJFLAGS KERNEL64.ELF KERNEL64
 	find . \( -name '*.o' -o -name '*.d' \) -print -exec rm -rf '{}' \;
 	dd if=/dev/zero of=floppy.img bs=512 count=2880

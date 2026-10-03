@@ -24,6 +24,7 @@
 #include "bootinfo.h"
 #include "video.h"
 #include "asm.h"
+#include "gdt.h"
 
 const char Keymap[128]={
 	0,ESC,'1','2','3','4','5','6',
@@ -58,6 +59,7 @@ int tokenize(char *line,char **argv,int max);
 void shell(void);
 
 void entry64(struct BootInfo *bi){
+	gdt_init();
 	if(video_vesa_init(bi)==0){
 		puts("SideProjectsOS 1.00\r\n");
 		putc('\n');
