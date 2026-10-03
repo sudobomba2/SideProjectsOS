@@ -25,6 +25,7 @@
 #include "video.h"
 #include "asm.h"
 #include "gdt.h"
+#include "cmos.h"
 
 const char Keymap[128]={
 	0,ESC,'1','2','3','4','5','6',

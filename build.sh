@@ -7,7 +7,7 @@ export AS="nasm"
 export CC="$CCOMPILER-gcc"
 export LD="$CCOMPILER-ld" 
 export OBJCOPY="$CCOMPILER-objcopy"
-export CFLAGS="-Wall -Wextra -fno-builtin -nodefaultlibs -nostartfiles -nostdlib -ffreestanding -fno-pic -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -nostdinc -mno-red-zone -mno-sse -I./kernel/lib -I./kernel/headers -I./kernel/sys -I./kernel/mm"
+export CFLAGS="-Wall -Wextra -fno-builtin -nodefaultlibs -nostartfiles -nostdlib -ffreestanding -fno-pic -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -nostdinc -mno-red-zone -mno-sse -I./kernel/lib -I./kernel/headers -I./kernel/sys -I./kernel/other"
 export LDFLAGS="-T kernel/linker.ld -m elf_x86_64 -static -nostdlib" 
 export OBJFLAGS="-O binary"
 
