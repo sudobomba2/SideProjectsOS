@@ -1,3 +1,5 @@
+/* main64 why not */
+
 #include "libc.h"
 #include "bootinfo.h"
 #include "vga.h"
@@ -5,6 +7,7 @@
 __attribute__((cdecl,)) void entry64(struct BootInfo *bi){
 	__asm__ volatile("sti");
 	clrscr();
+	/* test*/
 	printf("KERNEL64\r\n");
 	goto end;
 end:

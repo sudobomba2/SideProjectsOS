@@ -1,3 +1,5 @@
+; Real-Mode -> Protected Mode -> Long Mode transitions
+
 BOOTINFO equ 0x500
 E820_BUF equ BOOTINFO+0x10
 E820_MAX equ 64

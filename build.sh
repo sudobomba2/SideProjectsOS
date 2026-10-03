@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# tweak this shit if needed
 export CCOMPILER="x86_64-elf"
 export AS="nasm"
 export CC="$CCOMPILER-gcc"
@@ -10,7 +11,7 @@ export CFLAGS="-Wall -Wextra -fno-builtin -nodefaultlibs -nostartfiles -nostdlib
 export LDFLAGS="-T kernel/linker.ld -m elf_x86_64 -static -nostdlib" 
 export OBJFLAGS="-O binary"
 
-build(){
+build(){ # build
 	find . \( -name '*.o' -o -name '*.d' \) -print -exec rm -rf '{}' \;
 	rm -rf floppy.img
 	nasm -f bin stage1/fat12.s -o BOOT0
