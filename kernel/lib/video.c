@@ -1,5 +1,20 @@
 #include "video.h"
 #include "stddef.h"
+#include "font8x8.h"
+#include "libc.h"
+
+#define SCREEN_W 640
+#define SCREEN_H 480
+#define CELL 8
+#define COLS (SCREEN_W/CELL)
+#define ROWS (SCREEN_H/CELL)
+
+uint32_t Column;
+uint32_t Rows;
+uint32_t CurrentX;
+uint32_t CurrentY;
+uint32_t FGColor=0x00FFFFFF;
+uint32_t BGColor=0x00000000;
 
 #define PDPT_ADDR 0x2000
 #define PAGE_2M  0x200000ULL
@@ -35,11 +50,16 @@ int video_vesa_init(const struct BootInfo *bi){
 	FramebufferBase=NULL;
 	if(v->Width==0||v->Height==0||v->BPP!=32||v->Framebuffer==0){return -1;}
 	if(map_range(v->Framebuffer,(uint64_t)v->Pitch*v->Height)!=0){return -1;}
+	VideoMode.Base=(volatile uint8_t*)(uintptr_t)v->Framebuffer;
 	VideoMode.Width=v->Width;
 	VideoMode.Height=v->Height;
 	VideoMode.Pitch=v->Pitch;
  	VideoMode.BPP=v->BPP;
-	FramebufferBase=(volatile uint8_t *)(uintptr_t)v->Framebuffer;
+	FramebufferBase=(volatile uint8_t*)(uintptr_t)v->Framebuffer;
+	Column=VideoMode.Width/CELL;
+	Rows=VideoMode.Height/CELL;
+	CurrentX=0;
+	CurrentY=0;
 	return 0;
 }
 
@@ -50,5 +70,42 @@ void video_vesa_clear(uint32_t rgb){(void)rgb;return;}
 void video_vesa_draw_pixel(uint32_t x,uint32_t y,uint32_t rgb){
 	if(!FramebufferBase||x>=VideoMode.Width||y>=VideoMode.Height){return;}
 	*(volatile uint32_t*)(FramebufferBase+(size_t)y*VideoMode.Pitch+(size_t)x*4)=rgb;
+	return;
+}
+
+static void draw_glyph(uint32_t cx,uint32_t cy,char c){
+	const char *glyph=font8x8_basic[(uint8_t)c&0x7F];
+	for(uint32_t row=0; row<8;row++){uint32_t *dst=(uint32_t*)video_vesa_row(cy*CELL+row)+cx*CELL;uint8_t bits=(uint8_t)glyph[row];for(uint32_t col = 0; col < 8; col++){dst[col]=((bits>>col)&1)?FGColor:BGColor;}}
+	return;
+}
+
+static void scroll(void){
+	size_t line_bytes=(size_t)CELL*VideoMode.Pitch;
+	memmove(video_vesa_row(0),video_vesa_row(CELL),(Rows-1)*line_bytes);
+	uint8_t *last=video_vesa_row((Rows-1)*CELL);
+	if(BGColor==0){memset(last, 0, line_bytes);}
+	else{for(uint32_t y=0;y<CELL;y++){uint32_t *row=(uint32_t*)(last+(size_t)y*VideoMode.Pitch);for(uint32_t x=0;x<VideoMode.Width;x++){row[x]=BGColor;}}}
+}
+
+static void newline(void) {
+	CurrentX=0;
+	if(++CurrentY>=Rows){scroll();CurrentY=Rows-1;}
+	return;
+}
+
+void putc(char character){
+	switch(character){
+		case '\n': newline();return;
+		case '\r': CurrentX=0;return;
+		case '\b': if(CurrentX){CurrentX--;draw_glyph(CurrentX,CurrentY,' ');}return;
+	}
+	draw_glyph(CurrentX,CurrentY,character);
+	if(++CurrentX>=Column){newline();}
+	return;
+}
+
+void puts(const char *string){
+	int i=0;
+	while(string[i]){putc(string[i]);i++;}
 	return;
 }

@@ -7,7 +7,7 @@
 __attribute__((cdecl,)) void entry64(struct BootInfo *bi){
 	__asm__ volatile("sti");
 	if(video_vesa_init(bi)==0){
-		video_vesa_draw_pixel(5,5,RGB(255,255,255));
+		puts("SideProjectsOS 1.00\r\n");
 	}else{goto end;}
 	goto end;
 end:
